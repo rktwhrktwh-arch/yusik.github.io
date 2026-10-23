@@ -1,201 +1,752 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>정령 동거 — 설정집</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="오버워치 영웅을 몰래 그리고, 맞히고, 다시 그리는 전달 게임. 가입 없이 친구들과 각자 폰으로 함께 해요.">
+<meta property="og:title" content="오버워치 낙서 릴레이">
+<meta property="og:description" content="영웅을 그리고 맞히는 전달 게임 — 초대 링크로 바로 참여">
+<title>오버워치 낙서 릴레이</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap">
+<style>
+/* Layout: 한 화면 카드형 진행 — 홈(한 기기 / 온라인) → 작성·그리기 반복 → 앨범 */
+:root{
+  --paper:#f3f6f4; --card:#ffffff; --ink:#1d2a33; --muted:#5f707a;
+  --line:#d4ddda; --accent:#ff5a36; --accent-ink:#ffffff; --mint:#2fb59a;
+  --shadow:0 2px 0 #1d2a33;
+  --display:"Gaegu","Gowun Dodum",cursive; --body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#141b20; --card:#1d262c; --ink:#e8efec; --muted:#9aaab1; --line:#2f3b42;
+  --accent:#ff7150; --accent-ink:#1a0d08; --mint:#4fd0b4; --shadow:0 2px 0 #000; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#141b20; --card:#1d262c; --ink:#e8efec; --muted:#9aaab1; --line:#2f3b42;
+  --accent:#ff7150; --accent-ink:#1a0d08; --mint:#4fd0b4; --shadow:0 2px 0 #000; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px;
+  background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:22px 22px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:700;font-size:2.6rem;line-height:1;margin:0;letter-spacing:-.5px;cursor:default}
+h1 span{color:var(--accent)}
+h1 .sub{display:block;font-size:1.05rem;color:var(--muted);letter-spacing:0;margin-top:4px;font-weight:400}
+.ok{display:inline-block;margin-left:6px;padding:0 8px;border-radius:999px;background:var(--mint);color:var(--accent-ink);font-size:.95rem}
+.no{display:inline-block;margin-left:6px;padding:0 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:.95rem}
+.score{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;font-size:1.05rem}
+.score .pt{font-family:var(--display);font-weight:700;font-size:1.3rem;font-variant-numeric:tabular-nums;text-align:right}
+.role{font-size:.8rem;color:var(--muted)}
+.step{font-family:var(--display);font-size:1.25rem;color:var(--muted)}
+main{display:flex;flex-direction:column;gap:18px}
+.card{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:20px;box-shadow:4px 4px 0 var(--ink);display:flex;flex-direction:column;gap:14px;min-width:0}
+h2{font-family:var(--display);font-size:1.9rem;margin:0;line-height:1.1;text-wrap:balance}
+h3{font-family:var(--display);font-size:1.5rem;margin:0;line-height:1.1}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+button{font:inherit;font-family:var(--display);font-size:1.3rem;font-weight:700;cursor:pointer;border:2px solid var(--ink);border-radius:10px;
+  padding:8px 18px;background:var(--card);color:var(--ink);box-shadow:var(--shadow);transition:transform .08s}
+button:active{transform:translateY(2px);box-shadow:none}
+button.primary{background:var(--accent);color:var(--accent-ink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.end{justify-content:flex-end}
+.grow{flex:1}
+input[type=text]{font:inherit;font-size:1.1rem;width:100%;padding:10px 12px;border:2px solid var(--ink);border-radius:10px;background:var(--paper);color:var(--ink);min-width:0}
+.row input[type=text]{flex:1;width:auto}
+input.code{text-transform:uppercase;letter-spacing:.3em;font-family:var(--display);font-size:1.5rem;font-weight:700;max-width:10em}
+.modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:620px){.modes{grid-template-columns:1fr}}
+.players{display:flex;flex-direction:column;gap:8px}
+.player{display:flex;gap:8px;align-items:center}
+.player .num{font-family:var(--display);font-size:1.4rem;width:28px;text-align:center;color:var(--muted);font-variant-numeric:tabular-nums}
+.player button{padding:6px 12px;font-size:1.1rem}
+.rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.rule{border:2px dashed var(--line);border-radius:10px;padding:10px;font-size:.95rem}
+.rule b{font-family:var(--display);font-size:1.25rem;display:block}
+@media (max-width:560px){.rules{grid-template-columns:1fr}}
+.handoff{text-align:center;align-items:center;padding-block:36px}
+.handoff .name{font-family:var(--display);font-size:3.2rem;color:var(--accent);line-height:1;overflow-wrap:anywhere}
+.bigcode{font-family:var(--display);font-size:3.4rem;font-weight:700;letter-spacing:.2em;color:var(--accent);line-height:1}
+.prompt{font-family:var(--display);font-size:1.8rem;line-height:1.2;background:var(--paper);border:2px solid var(--line);border-radius:10px;padding:12px 14px;word-break:keep-all;overflow-wrap:anywhere}
+.label{font-size:.8rem;letter-spacing:.08em;color:var(--muted)}
+.canvas-box{border:2px solid var(--ink);border-radius:10px;overflow:hidden;background:#fff;touch-action:none;max-width:100%}
+canvas{display:block;width:100%;height:auto;aspect-ratio:4/3;cursor:crosshair;touch-action:none}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.swatch{width:32px;height:32px;border-radius:50%;border:2px solid var(--ink);padding:0;box-shadow:none}
+.swatch.on{outline:3px solid var(--mint);outline-offset:2px}
+.size{width:36px;height:36px;padding:0;display:grid;place-items:center;box-shadow:none;border-radius:8px}
+.size.on{background:var(--ink);color:var(--card)}
+.size i{display:block;border-radius:50%;background:currentColor}
+.tools .sep{width:1px;height:28px;background:var(--line)}
+.tools button.tbtn{font-size:1.05rem;padding:5px 12px;box-shadow:none}
+.shown-img{width:100%;border:2px solid var(--line);border-radius:10px;background:#fff;display:block}
+.progress{display:flex;gap:4px;width:100%}
+.progress i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.progress i.done{background:var(--mint)}
+.progress i.now{background:var(--accent)}
+.albums{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.albums button{text-align:left;font-size:1.2rem;overflow-wrap:anywhere}
+.albums small{display:block;font-family:var(--body);font-weight:400;font-size:.85rem;color:var(--muted)}
+.chain{display:flex;flex-direction:column;gap:14px}
+.entry{display:flex;flex-direction:column;gap:6px;animation:pop .35s ease}
+.entry .who{font-family:var(--display);font-size:1.15rem;color:var(--muted)}
+.entry .who b{color:var(--ink)}
+@keyframes pop{from{transform:translateY(8px);opacity:.3}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.entry{animation:none}button{transition:none}}
+.err{color:var(--accent);font-size:.9rem;min-height:1.2em}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--ink);border-radius:999px;padding:3px 12px;font-family:var(--display);font-size:1.2rem;background:var(--paper)}
+.chip.me{background:var(--mint);color:var(--accent-ink);border-color:var(--ink)}
+.chip.wait{opacity:.45;border-style:dashed}
+.chip.host::after{content:" ★";color:var(--accent)}
+.roomlist{display:flex;flex-direction:column;gap:6px}
+.roomlist button{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:1.15rem;text-align:left}
+.roomlist small{font-family:var(--body);font-weight:400;font-size:.85rem;color:var(--muted)}
+.note{border-left:4px solid var(--mint);padding:6px 10px;background:var(--paper);border-radius:0 8px 8px 0;font-size:.92rem}
+
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
 </head>
-<body style="margin:0;background:#DCE0DE;font-family:'Nanum Myeongjo','Batang',serif;color:#17262E;">
-<div style="max-width:620px;margin:0 auto;">
+<body>
 
-<div style="background:#17262E;padding:30px 26px;">
-  <div style="font-size:26px;color:#EDF2F1;letter-spacing:-0.5px;">정령 동거</div>
-  <div style="font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:12px;color:#6FC4C9;margin-top:9px;letter-spacing:2px;">설정집</div>
-</div>
-
-<div style="background:#CFD6D3;padding:16px 26px;font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:12px;line-height:2.2;">
-  <a href="#세계관" style="color:#3E8B93;text-decoration:none;margin-right:14px;">세계관</a>
-  <a href="#정령" style="color:#3E8B93;text-decoration:none;margin-right:14px;">정령 아홉</a>
-  <a href="#게이트" style="color:#3E8B93;text-decoration:none;margin-right:14px;">게이트</a>
-  <a href="#몬스터" style="color:#3E8B93;text-decoration:none;margin-right:14px;">몬스터</a>
-  <a href="#용종" style="color:#3E8B93;text-decoration:none;">용종</a>
+<div class="wrap">
+  <header>
+    <h1>낙서 <span>릴레이</span><small class="sub">오버워치 영웅편</small></h1>
+    <div class="step" id="stepLabel">시작</div>
+  </header>
+  <div class="note" id="net" hidden></div>
+  <main id="app"></main>
 </div>
 
-<div id="세계관" style="padding:34px 26px 0;">
-  <div style="font-size:20px;margin-bottom:16px;">세계관</div>
-  <div style="font-size:14px;line-height:2.1;color:#2C3F47;">
-    게이트는 예고 없이 열린다. 안에는 몬스터가 있고, 사흘을 방치하면 전부 바깥으로 쏟아진다. 정부는 협회를 세워 헌터를 관리하고 부산물을 사들인다.<br><br>
-    그리고 아주 드물게, 정령과 계약하는 인간이 나타난다. 국내에서 확인된 정령술사는 셋뿐이다.<br><br>
-    정령은 식사를 필요로 하지 않는다. 마력만 있으면 된다. 다만 그 마력을 채우는 방법이 접촉이라는 사실은, 계약한 뒤에야 알게 된다.
-  </div>
-</div>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const HEROES=["D.Va","D.Mon","도미나","독트린","둠피스트","라마트라","라인하르트","레킹볼","로드호그","마우가","시그마","오리사","윈스턴","자리야","정커퀸","해저드",
+"겐지","리퍼","메이","바스티온","벤데타","벤처","소전","솔저: 76","솜브라","시메트라","시에라","애쉬","에코","엠레","위도우메이커","정크랫","캐서디","토르비욘","트레이서","파라","프레야","한조",
+"라이프위버","루시우","메르시","모이라","미즈키","바티스트","브리기테","시온","아나","안란","우양","일리아리","제트팩 캣","젠야타","주노","키리코"];
+// 맞힘 판정용 별칭 (공백·기호·대소문자 무시)
+const ALIAS={"디바":"D.Va","dva":"D.Va","디몬":"D.Mon","dmon":"D.Mon","솔저":"솔저: 76","솔져":"솔저: 76","솔져76":"솔저: 76","솔저76":"솔저: 76","맥크리":"캐서디","캐시디":"캐서디","토비":"토르비욘","토르비온":"토르비욘","위도우":"위도우메이커","정커퀸":"정커퀸","레킹":"레킹볼","햄찌":"레킹볼","햄스터":"레킹볼","라인":"라인하르트","브리기테":"브리기테","브리":"브리기테","바티":"바티스트","젠야":"젠야타","일리":"일리아리","라이프":"라이프위버","제트팩캣":"제트팩 캣","고양이":"제트팩 캣","둠피":"둠피스트","시메":"시메트라","트레":"트레이서","로드":"로드호그","돼지":"로드호그","정크":"정크랫","라마":"라마트라"};
+const norm=x=>String(x||"").toLowerCase().replace(/[\s.:·\-_]/g,"");
+const HERO_BY_NORM={};HEROES.forEach(h=>HERO_BY_NORM[norm(h)]=h);Object.entries(ALIAS).forEach(([k,v])=>HERO_BY_NORM[norm(k)]=v);
+const toHero=x=>HERO_BY_NORM[norm(x)]||null;
+const isRight=(guess,hero)=>toHero(guess)===hero;
+function pickHeroes(n){const a=HEROES.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,n)}
+const heroDatalist=`<datalist id="heroList">${HEROES.map(h=>`<option value="${h}"></option>`).join("")}</datalist>`;
+const COLORS=["#1d2a33","#ffffff","#e8463a","#f59f2a","#f2d13a","#3bb36a","#2f8fe0","#7d4fd6","#f27ab0","#8a5a3b"];
+const SIZES=[3,8,16,32];
+const KIND_NAME={draw:"그리기",guess:"맞히기"};
+const app=document.getElementById("app");
+const stepLabel=document.getElementById("stepLabel");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const kind=r=>r%2===0?"draw":"guess";
+const mod=(a,n)=>((a%n)+n)%n;
+// 라운드 r에서 p번째 사람이 맡는 체인
+const chainOf=(p,r,n)=>mod(p-r,n);
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 
-<div id="정령" style="padding:34px 26px 0;">
-  <div style="border-top:1px solid #B5BFBC;padding-top:26px;">
-    <div style="font-size:20px;">정령 아홉</div>
-    <div style="font-size:13px;color:#5E767E;margin:8px 0 20px;">동시에 계약할 수 있는 건 셋까지. 넷째와 계약하려면 하나를 휴면으로 돌려야 한다.</div>
+let VIEW="home"; // home | local | online
+const top0=()=>window.scrollTo({top:0});
 
-<div id="아르시에" style="border-top:2px solid #3E8B93;background:#CFD6D3;margin-bottom:14px;">
-  <div style="padding:20px 22px 22px;">
-    <div style="font-size:21px;color:#17262E;">아르시에</div>
-    <div style="font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11px;color:#3E8B93;margin-top:5px;">물의 정령 &nbsp;·&nbsp; A1_ / A2_</div>
-    <div style="font-size:12.5px;color:#5E767E;margin-top:10px;">은빛 롱헤어 · 밝은 하늘색 눈동자 · 반말</div>
-    <div style="font-size:14px;color:#2C3F47;line-height:2.05;margin-top:16px;">활발하고 밝다. 스스럼없이 다가오고 감정 표현이 솔직하다. 말투는 가볍고 장난스럽고 빠르다. 자기감정에는 솔직하지만 깊은 속마음은 잘 보여주지 않는다. 진지한 분위기를 못 견디고 농담으로 깨려 한다.</div>
-    <div style="border-top:1px solid #B5BFBC;margin-top:18px;padding-top:14px;font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11.5px;color:#5E767E;line-height:2.1;">
-      선호 접촉 &nbsp; <span style="color:#2C3F47;">껴안기, 머리 헝클기</span><br>
-      속성 상성 &nbsp; <span style="color:#2C3F47;">기계 유리 · 자연 불리</span><br>
-      전투 지원 &nbsp; <span style="color:#2C3F47;">대상 1체 행동 지연. 다음 전투까지 +1 유지</span>
+/* ================= 공용 화면 조각 ================= */
+function textTask(k,prevImg,onDone){
+  app.innerHTML=`<section class="card">
+    <h2>이 영웅은 누구일까요?</h2>
+    ${prevImg?`<img class="shown-img" src="${prevImg}" alt="앞 사람이 그린 그림">`:""}
+    <input type="text" id="txt" maxlength="30" list="heroList" placeholder="영웅 이름 (몇 글자 치면 목록이 떠요)" autocomplete="off">${heroDatalist}
+    <p class="muted small">목록에 없는 이름도 적을 수 있어요. 다음 사람은 여기 적은 이름을 보고 그려요.</p>
+    <div class="err" id="err"></div>
+    <div class="row">
+      <span class="grow"></span>
+      <button class="primary" id="ok">완료</button>
     </div>
-  </div>
-</div>
-<div id="플로리아" style="border-top:2px solid #6E9E62;background:#CFD6D3;margin-bottom:14px;">
-  <div style="padding:20px 22px 22px;">
-    <div style="font-size:21px;color:#17262E;">플로리아</div>
-    <div style="font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11px;color:#6E9E62;margin-top:5px;">숲의 정령 &nbsp;·&nbsp; P1_ / P2_</div>
-    <div style="font-size:12.5px;color:#5E767E;margin-top:10px;">연두색 헤어번 · 밝은 연두색 눈동자 · 존댓말</div>
-    <div style="font-size:14px;color:#2C3F47;line-height:2.05;margin-top:16px;">조용하고 나긋나긋하다. 부끄러움이 없고 감정을 잘 드러내지 않는다. 자신이 누나라고 어필하며, 곤란한 농담을 던지고는 상대가 당황하는 걸 즐긴다. 정작 본인이 당황하면 존댓말이 흐트러진다.</div>
-    <div style="border-top:1px solid #B5BFBC;margin-top:18px;padding-top:14px;font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11.5px;color:#5E767E;line-height:2.1;">
-      선호 접촉 &nbsp; <span style="color:#2C3F47;">무릎베개, 끌어안기</span><br>
-      속성 상성 &nbsp; <span style="color:#2C3F47;">야수 유리 · 불속성 몬스터 불리</span><br>
-      전투 지원 &nbsp; <span style="color:#2C3F47;">계약자와 정령의 피해를 각각 1 경감</span>
+  </section>`;
+  const t=document.getElementById("txt"); t.focus();
+  const ok=document.getElementById("ok");
+  const done=async()=>{let v=t.value.trim();if(!v){document.getElementById("err").textContent="영웅 이름을 적어 주세요.";return}v=toHero(v)||v;
+    ok.disabled=true;try{await onDone({type:"text",text:v})}catch(e){ok.disabled=false;document.getElementById("err").textContent=e.message||"저장하지 못했어요. 다시 눌러 주세요."}};
+  ok.onclick=done;
+  t.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)done()};
+}
+function drawTask(promptText,onDone,isFirst){
+  let hero=promptText;
+  app.innerHTML=`<section class="card">
+    <div class="label">${isFirst?"내가 그릴 영웅 (다른 사람에게 보여 주지 마세요)":"앞 사람이 맞힌 영웅"}</div>
+    <div class="row"><div class="prompt grow" id="heroName">${esc(promptText)}</div>${isFirst?'<button class="tbtn" id="reroll" style="font-size:1.05rem">다른 영웅</button>':""}</div>
+    <p class="muted small">글자나 숫자는 쓰지 말고 그림으로만 표현해 주세요.</p>
+    <div class="canvas-box"><canvas id="cv" width="800" height="600" aria-label="그림판"></canvas></div>
+    <div class="tools" id="tools">
+      ${COLORS.map((c,i)=>`<button class="swatch${i===0?" on":""}" data-c="${c}" style="background:${c}" aria-label="색 ${c}"></button>`).join("")}
+      <span class="sep"></span>
+      ${SIZES.map((s,i)=>`<button class="size${i===1?" on":""}" data-s="${s}" aria-label="굵기 ${s}"><i style="width:${Math.min(4+s/1.6,22)}px;height:${Math.min(4+s/1.6,22)}px"></i></button>`).join("")}
+      <span class="sep"></span>
+      <button class="tbtn" id="undo">되돌리기</button>
+      <button class="tbtn" id="clear">전부 지우기</button>
     </div>
-  </div>
-</div>
-<div id="아이리스" style="border-top:2px solid #B79A45;background:#CFD6D3;margin-bottom:14px;">
-  <div style="padding:20px 22px 22px;">
-    <div style="font-size:21px;color:#17262E;">아이리스</div>
-    <div style="font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11px;color:#B79A45;margin-top:5px;">빛의 정령 &nbsp;·&nbsp; I1_ / I2_</div>
-    <div style="font-size:12.5px;color:#5E767E;margin-top:10px;">블론드 사이드테일 · 금색 눈동자 · 반존대</div>
-    <div style="font-size:14px;color:#2C3F47;line-height:2.05;margin-top:16px;">조용하지만 부드럽다. 감정을 잘 안 드러내지만 표정으로 읽힌다. 계약자를 기사로 여기며, 부끄러워하면서도 가끔 대담하게 다가온다. 부끄러움이 한계를 넘으면 빛이 새어나온다.</div>
-    <div style="border-top:1px solid #B5BFBC;margin-top:18px;padding-top:14px;font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11.5px;color:#5E767E;line-height:2.1;">
-      선호 접촉 &nbsp; <span style="color:#2C3F47;">손등에 입맞춤, 볼뽀뽀</span><br>
-      속성 상성 &nbsp; <span style="color:#2C3F47;">언데드 · 악마 유리</span><br>
-      전투 지원 &nbsp; <span style="color:#2C3F47;">언데드와 악마 상대 지원 보정 두 배</span>
-    </div>
-  </div>
-</div>
-<div id="비비아나" style="border-top:2px solid #A85F52;background:#CFD6D3;margin-bottom:14px;">
-  <div style="padding:20px 22px 22px;">
-    <div style="font-size:21px;color:#17262E;">비비아나</div>
-    <div style="font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11px;color:#A85F52;margin-top:5px;">불의 정령 &nbsp;·&nbsp; B1_ / B2_</div>
-    <div style="font-size:12.5px;color:#5E767E;margin-top:10px;">검은 단발 · 연분홍 눈동자 · 존댓말</div>
-    <div style="font-size:14px;color:#2C3F47;line-height:2.05;margin-top:16px;">밝고 친근하면서도 비밀스럽다. 칭찬에 인색하고 속으로 부끄러워한다. 계약자를 유일한 친구로 여기며 그 단어에 집착한다. 접촉을 피하면서도 몰래 침대에 들어와 잠들고, 깨기 전에 빠져나가 시치미를 뗀다.</div>
-    <div style="border-top:1px solid #B5BFBC;margin-top:18px;padding-top:14px;font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11.5px;color:#5E767E;line-height:2.1;">
-      선호 접촉 &nbsp; <span style="color:#2C3F47;">같이 잠들기, 옷깃 붙잡기</span><br>
-      속성 상성 &nbsp; <span style="color:#2C3F47;">자연 유리 · 기계 불리</span><br>
-      전투 지원 &nbsp; <span style="color:#2C3F47;">전투 목표값 -2. 실패 시 아군 오폭</span>
-    </div>
-  </div>
-</div>
-<div id="녹시아" style="border-top:2px solid #6B6F85;background:#CFD6D3;margin-bottom:14px;">
-  <div style="padding:20px 22px 22px;">
-    <div style="font-size:21px;color:#17262E;">녹시아</div>
-    <div style="font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11px;color:#6B6F85;margin-top:5px;">그림자의 정령 &nbsp;·&nbsp; N1_ / N2_</div>
-    <div style="font-size:12.5px;color:#5E767E;margin-top:10px;">흑발 층진 단발 · 잿빛 눈동자 · 짧은 반말</div>
-    <div style="font-size:14px;color:#2C3F47;line-height:2.05;margin-top:16px;">말수가 적고 표정 변화가 거의 없다. 소리 없이 움직이며 어둠 속에서 형체가 흐려진다. 그림자로 먼저 닿아놓고 모른 척하고, 마력이 바닥나도 먼저 요구하지 않는다. 필요하다는 말을 하기 싫어한다.</div>
-    <div style="border-top:1px solid #B5BFBC;margin-top:18px;padding-top:14px;font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11.5px;color:#5E767E;line-height:2.1;">
-      선호 접촉 &nbsp; <span style="color:#2C3F47;">등 뒤에서 기대기, 손끝 맞대기</span><br>
-      속성 상성 &nbsp; <span style="color:#2C3F47;">야수 · 기계 유리 · 빛속성 몬스터 불리</span><br>
-      전투 지원 &nbsp; <span style="color:#2C3F47;">다음 방 구성 사전 파악. 함정 위력 경감</span>
-    </div>
-  </div>
-</div>
-<div id="레티아" style="border-top:2px solid #B09A3C;background:#CFD6D3;margin-bottom:14px;">
-  <div style="padding:20px 22px 22px;">
-    <div style="font-size:21px;color:#17262E;">레티아</div>
-    <div style="font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11px;color:#B09A3C;margin-top:5px;">번개의 정령 &nbsp;·&nbsp; R1_ / R2_</div>
-    <div style="font-size:12.5px;color:#5E767E;margin-top:10px;">붉은기 도는 금발 하이포니테일 · 노란 눈동자 · 거친 반말</div>
-    <div style="font-size:14px;color:#2C3F47;line-height:2.05;margin-top:16px;">승부욕이 강하고 직설적이다. 성격이 급하고 가만히 있질 못한다. 계속 도발해놓고 되받아치면 먼저 당황하며, 칭찬받으면 화제를 돌린다. 진 걸 인정하기 싫어서 더 들이대는 쪽.</div>
-    <div style="border-top:1px solid #B5BFBC;margin-top:18px;padding-top:14px;font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11.5px;color:#5E767E;line-height:2.1;">
-      선호 접촉 &nbsp; <span style="color:#2C3F47;">손깍지, 이마 맞대기</span><br>
-      속성 상성 &nbsp; <span style="color:#2C3F47;">야수 유리 · 기계 불리</span><br>
-      전투 지원 &nbsp; <span style="color:#2C3F47;">지원 보정 강화. 기습 판정을 유리하게 전환</span>
-    </div>
-  </div>
-</div>
-<div id="리브라" style="border-top:2px solid #8B72A8;background:#CFD6D3;margin-bottom:14px;">
-  <div style="padding:20px 22px 22px;">
-    <div style="font-size:21px;color:#17262E;">리브라</div>
-    <div style="font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11px;color:#8B72A8;margin-top:5px;">꿈의 정령 &nbsp;·&nbsp; L1_ / L2_</div>
-    <div style="font-size:12.5px;color:#5E767E;margin-top:10px;">연보라 장발 · 보라색 눈동자 · 늘어지는 반말</div>
-    <div style="font-size:14px;color:#2C3F47;line-height:2.05;margin-top:16px;">항상 반쯤 잠들어 있고 경계심이 거의 없다. 시간 감각이 없고 말끝을 흐린다. 남의 꿈을 들여다볼 수 있으며, 잠꼬대로 진심을 흘린다. 마력 보충을 자면서 해버리고 다음 날 기억 못 하는 척한다.</div>
-    <div style="border-top:1px solid #B5BFBC;margin-top:18px;padding-top:14px;font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11.5px;color:#5E767E;line-height:2.1;">
-      선호 접촉 &nbsp; <span style="color:#2C3F47;">껴안고 잠들기, 무릎에 머리 얹기</span><br>
-      속성 상성 &nbsp; <span style="color:#2C3F47;">악마 · 언데드 유리 · 기계 불리</span><br>
-      전투 지원 &nbsp; <span style="color:#2C3F47;">전투 회피 후 진행. 게이트 밖 회복량 두 배</span>
-    </div>
-  </div>
-</div>
-<div id="셀리아" style="border-top:2px solid #6E93A3;background:#CFD6D3;margin-bottom:14px;">
-  <div style="padding:20px 22px 22px;">
-    <div style="font-size:21px;color:#17262E;">셀리아</div>
-    <div style="font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11px;color:#6E93A3;margin-top:5px;">얼음의 정령 &nbsp;·&nbsp; C1_ / C2_</div>
-    <div style="font-size:12.5px;color:#5E767E;margin-top:10px;">은발 허리까지 오는 생머리 · 옅은 청회색 눈동자 · 정중한 존댓말</div>
-    <div style="font-size:14px;color:#2C3F47;line-height:2.05;margin-top:16px;">아르시에의 친언니. 엄격한 완벽주의자로 지적과 잔소리가 많다. 판단 기준이 전부 동생에게 맞춰져 있고, 동생 앞에서는 지적만 하지만 없는 자리에서는 은근히 자랑한다. 그 엄격함이 동생을 주눅들게 만든 원인이라는 걸 모른다.</div>
-    <div style="border-top:1px solid #B5BFBC;margin-top:18px;padding-top:14px;font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11.5px;color:#5E767E;line-height:2.1;">
-      선호 접촉 &nbsp; <span style="color:#2C3F47;">머리 빗겨주기, 자세 고쳐주기</span><br>
-      속성 상성 &nbsp; <span style="color:#2C3F47;">야수 · 언데드 유리 · 악마 불리</span><br>
-      전투 지원 &nbsp; <span style="color:#2C3F47;">지원 성공 시 이번 전투 피해 전부 무효화</span>
-    </div>
-  </div>
-</div>
-<div id="오르네아" style="border-top:2px solid #997A4E;background:#CFD6D3;margin-bottom:14px;">
-  <div style="padding:20px 22px 22px;">
-    <div style="font-size:21px;color:#17262E;">오르네아</div>
-    <div style="font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11px;color:#997A4E;margin-top:5px;">대지의 정령 &nbsp;·&nbsp; O1_ / O2_</div>
-    <div style="font-size:12.5px;color:#5E767E;margin-top:10px;">짙은 갈색 웨이브 장발 · 황갈색 눈동자 · 느린 반말</div>
-    <div style="font-size:14px;color:#2C3F47;line-height:2.05;margin-top:16px;">서두르는 법이 없다. 말은 많은 편이고 문장을 끝까지 다 말한다. 결정이 느리지만 한 번 정하면 바꾸지 않는다. 먼저 다가오지도 피하지도 않고 옆자리를 비워둔 채 기다린다. 재촉당하면 오히려 더 느려진다.</div>
-    <div style="border-top:1px solid #B5BFBC;margin-top:18px;padding-top:14px;font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11.5px;color:#5E767E;line-height:2.1;">
-      선호 접촉 &nbsp; <span style="color:#2C3F47;">어깨 기대기, 무릎 위에 손 얹기</span><br>
-      속성 상성 &nbsp; <span style="color:#2C3F47;">기계 유리 · 자연 불리</span><br>
-      전투 지원 &nbsp; <span style="color:#2C3F47;">지형 재구성. 목표값 감소가 방 전체에 유지</span>
-    </div>
-  </div>
-</div>
-  </div>
-</div>
+    <div class="err" id="err"></div>
+    <div class="row end"><button class="primary" id="ok">완료</button></div>
+  </section>`;
+  const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+  let color=COLORS[0],size=SIZES[1],strokes=[],cur=null;
+  const redraw=()=>{
+    ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.lineCap="round";ctx.lineJoin="round";
+    for(const s of strokes){
+      ctx.strokeStyle=s.c;ctx.fillStyle=s.c;ctx.lineWidth=s.w;
+      if(s.p.length===1){ctx.beginPath();ctx.arc(s.p[0][0],s.p[0][1],s.w/2,0,Math.PI*2);ctx.fill();continue}
+      ctx.beginPath();ctx.moveTo(s.p[0][0],s.p[0][1]);
+      for(let i=1;i<s.p.length-1;i++){const mx=(s.p[i][0]+s.p[i+1][0])/2,my=(s.p[i][1]+s.p[i+1][1])/2;ctx.quadraticCurveTo(s.p[i][0],s.p[i][1],mx,my)}
+      const l=s.p[s.p.length-1];ctx.lineTo(l[0],l[1]);ctx.stroke();
+    }
+  };
+  redraw();
+  const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
+  cv.onpointerdown=e=>{e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(_){}cur={c:color,w:size,p:[pos(e)]};strokes.push(cur);redraw()};
+  cv.onpointermove=e=>{if(!cur)return;const ev=e.getCoalescedEvents?e.getCoalescedEvents():[e];for(const x of ev)cur.p.push(pos(x));redraw()};
+  const end=()=>{cur=null};
+  cv.onpointerup=end;cv.onpointercancel=end;
+  const tools=document.getElementById("tools");
+  tools.querySelectorAll(".swatch").forEach(b=>b.onclick=()=>{color=b.dataset.c;tools.querySelectorAll(".swatch").forEach(x=>x.classList.toggle("on",x===b))});
+  tools.querySelectorAll(".size").forEach(b=>b.onclick=()=>{size=+b.dataset.s;tools.querySelectorAll(".size").forEach(x=>x.classList.toggle("on",x===b))});
+  document.getElementById("undo").onclick=()=>{strokes.pop();redraw()};
+  if(isFirst){let left=2;const rr=document.getElementById("reroll");rr.textContent=`다른 영웅 (${left})`;
+    rr.onclick=()=>{if(left<=0)return;let h;do{h=HEROES[Math.floor(Math.random()*HEROES.length)]}while(h===hero);hero=h;left--;
+      document.getElementById("heroName").textContent=hero;rr.textContent=`다른 영웅 (${left})`;rr.disabled=left<=0}}
+  let armed=false;const clr=document.getElementById("clear");
+  clr.onclick=()=>{if(!strokes.length)return;if(!armed){armed=true;clr.textContent="정말 지울까요?";setTimeout(()=>{armed=false;clr.textContent="전부 지우기"},2500);return}strokes=[];redraw();armed=false;clr.textContent="전부 지우기"};
+  const ok=document.getElementById("ok");
+  ok.onclick=async()=>{
+    if(!strokes.length){document.getElementById("err").textContent="한 획이라도 그려 주세요.";return}
+    ok.disabled=true;
+    try{await onDone(isFirst?{type:"img",img:cv.toDataURL("image/jpeg",0.7),hero}:{type:"img",img:cv.toDataURL("image/jpeg",0.7)})}
+    catch(e){ok.disabled=false;document.getElementById("err").textContent=e.message||"저장하지 못했어요. 다시 눌러 주세요."}
+  };
+}
+function chainHTML(entries,nameOf,shown){
+  const hero=entries[0].hero;
+  return `<div class="chain">${entries.slice(0,shown).map((e,i)=>`
+    <div class="entry">
+      <div class="who"><b>${esc(nameOf(e.by))}</b>${i===0?`의 그림 · 출제 영웅 <b>${esc(hero)}</b>`:e.type==="img"?"의 그림":`의 추측${isRight(e.text,hero)?'<span class="ok">정답</span>':'<span class="no">빗나감</span>'}`}</div>
+      ${e.type==="img"?`<img class="shown-img" src="${e.img}" alt="${esc(nameOf(e.by))}의 그림">`:`<div class="prompt">${esc(e.text)}</div>`}
+    </div>`).join("")}</div>`;
+}
+const rulesHTML=`<div class="rules">
+  <div class="rule"><b>1. 영웅 그리기</b>각자 무작위로 받은 오버워치 영웅을 몰래 그립니다.</div>
+  <div class="rule"><b>2. 맞히기</b>앞 사람 그림만 보고 어떤 영웅인지 맞힙니다.</div>
+  <div class="rule"><b>3. 다시 그리기</b>앞 사람이 맞힌 이름만 보고 다시 그립니다.</div>
+</div>`;
+// 점수: 정답을 맞힌 사람 +1, 그 그림을 그린 사람 +1
+function scoreOf(chains,ids){
+  const pts={};ids.forEach(id=>pts[id]=0);
+  chains.forEach(es=>{const hero=es[0].hero;es.forEach((e,i)=>{if(i>0&&e.type==="text"&&isRight(e.text,hero)){pts[e.by]=(pts[e.by]||0)+1;pts[es[i-1].by]=(pts[es[i-1].by]||0)+1}})});
+  return pts;
+}
+function scoreHTML(chains,ids,nameOf){
+  const pts=scoreOf(chains,ids);const order=ids.slice().sort((a,b)=>pts[b]-pts[a]);
+  return `<div><div class="label">점수 · 정답을 맞히면 맞힌 사람과 그린 사람 모두 1점</div>
+    <div class="score">${order.map(id=>`<span>${esc(nameOf(id))}</span><span class="pt">${pts[id]}</span>`).join("")}</div></div>`;
+}
 
-<div id="게이트" style="padding:34px 26px 0;">
-  <div style="border-top:1px solid #B5BFBC;padding-top:26px;">
-    <div style="font-size:20px;margin-bottom:16px;">게이트</div>
-    <div style="font-size:14px;line-height:2.1;color:#2C3F47;">
-      등급은 D부터 S까지. 방 수는 순서대로 여섯, 아홉, 열여섯, 스물일곱, 마흔둘이다. 각 방은 보물방, 함정방, 쉼터, 전투방, 보스방으로 나뉜다.<br><br>
-      한번 들어가면 클리어까지 나올 수 없다. 협회에서 파는 탈출석이 유일한 예외이며, 보스방에서는 그마저 봉인된다.<br><br>
-      속성은 다섯. 언데드, 야수, 자연, 기계, 악마. 어떤 정령을 데려가느냐가 난이도를 결정한다.<br><br>
-      전투는 주사위로 갈린다. 헌터 등급과 계약 단계, 남은 마력과 컨디션, 속성 상성과 장비가 전부 더해져 등급별 목표치와 겨룬다. 정령의 지원이 실패하면 그 대가는 몸으로 받는다.
+/* ================= 홈 ================= */
+let NICK=ls.get("nr_nick")||"";
+function renderHome(){
+  VIEW="home";stepLabel.textContent="시작";
+  app.innerHTML=`<section class="card">
+    <h2>오버워치 영웅을 그리고, 맞히고, 다시 그리는 전달 게임</h2>
+    ${rulesHTML}
+    <p class="muted">한 바퀴 돌고 나면 처음 영웅이 끝까지 살아남았는지 앨범으로 함께 확인해요. 영웅은 ${HEROES.length}명 중에서 무작위로 나와요.</p>
+  </section>
+  <div class="modes">
+    <section class="card">
+      <h3>각자 폰으로 온라인</h3>
+      <div id="onlineBox"><p class="muted">온라인 연결을 확인하는 중…</p></div>
+    </section>
+    <section class="card">
+      <h3>한 기기로 돌려 하기</h3>
+      <p class="muted">폰 하나를 차례대로 넘기면서 해요. 로그인이나 공유가 필요 없어요.</p>
+      <div class="grow"></div>
+      <div class="row"><button id="local">한 기기로 시작</button></div>
+    </section>
+  </div>`;
+  document.getElementById("local").onclick=()=>{L.phase="setup";renderLocal()};
+  renderOnlineBox();
+}
+
+/* ================= 한 기기 모드 ================= */
+let L={players:["","",""],phase:"setup",round:0,turn:0,chains:[]};
+const ln=()=>L.players.length;
+function renderLocal(){VIEW="local";({setup:lSetup,handoff:lHandoff,play:lPlay,albums:lAlbums,chain:lChain})[L.phase]();top0()}
+function lSetup(){
+  stepLabel.textContent="한 기기 · 준비";
+  app.innerHTML=`<section class="card">
+    <h2>참가자 이름을 적어 주세요</h2>
+    <div class="label">참가자 (3–10명)</div>
+    <div class="players">${L.players.map((p,i)=>`
+      <div class="player"><span class="num">${i+1}</span>
+        <input type="text" id="pl${i}" data-i="${i}" placeholder="이름" maxlength="12" value="${esc(p)}">
+        <button data-del="${i}" aria-label="${i+1}번 참가자 빼기" ${ln()<=3?"disabled":""}>✕</button>
+      </div>`).join("")}</div>
+    <div class="err" id="err"></div>
+    <div class="row">
+      <button id="home">← 처음으로</button>
+      <button id="add" ${ln()>=10?"disabled":""}>+ 추가</button>
+      <span class="grow"></span>
+      <button class="primary" id="start">게임 시작</button>
     </div>
-  </div>
-</div>
-
-<div id="몬스터" style="padding:34px 26px 0;">
-  <div style="border-top:1px solid #B5BFBC;padding-top:26px;">
-    <div style="font-size:20px;margin-bottom:16px;">몬스터</div>
-    <div style="font-size:14px;line-height:2.1;color:#2C3F47;">
-      인간에게 무조건 적대적이며 대화나 협상은 성립하지 않는다. 처치하면 마석을 떨구고, 드물게 장비가 나온다. 사흘 간격으로 같은 자리에 되살아난다.<br><br>
-      사체는 게이트 안에서 마력으로 흩어진다. 밖으로 가져나갈 수 있는 것은 마석뿐이다.<br><br>
-      B급부터는 함정과 매복을 쓰고, A급 이상은 인간의 말을 알아듣는다. 대답은 하지 않는다.
+  </section>`;
+  app.querySelectorAll("input[data-i]").forEach(el=>el.oninput=()=>L.players[+el.dataset.i]=el.value);
+  app.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{L.players.splice(+b.dataset.del,1);renderLocal()});
+  document.getElementById("home").onclick=renderHome;
+  document.getElementById("add").onclick=()=>{L.players.push("");renderLocal();document.getElementById("pl"+(ln()-1)).focus()};
+  document.getElementById("start").onclick=()=>{
+    const names=L.players.map(s=>s.trim());
+    const err=document.getElementById("err");
+    if(names.some(s=>!s)){err.textContent="모든 참가자의 이름을 적어 주세요.";return}
+    if(new Set(names).size!==names.length){err.textContent="이름이 겹치지 않게 해 주세요.";return}
+    L.players=names;L.heroes=pickHeroes(names.length);L.chains=names.map((_,i)=>({owner:i,entries:[]}));L.round=0;L.turn=0;L.phase="handoff";renderLocal();
+  };
+}
+function lHandoff(){
+  const k=kind(L.round),name=L.players[L.turn],n=ln();
+  stepLabel.textContent=`${L.round+1}라운드 · ${KIND_NAME[k]}`;
+  let bar='<div class="progress" aria-hidden="true">';for(let r=0;r<n;r++)bar+=`<i class="${r<L.round?"done":r===L.round?"now":""}"></i>`;bar+="</div>";
+  app.innerHTML=`<section class="card handoff">
+    ${bar}<span class="muted small">${L.round*n+L.turn+1} / ${n*n} 차례</span>
+    <p class="muted">기기를 넘겨 주세요</p>
+    <div class="name">${esc(name)}</div>
+    <p>${L.round===0?"받은 영웅을 몰래 그려 주세요.":k==="draw"?"앞 사람이 맞힌 영웅을 그려 주세요.":"앞 사람의 그림이 어떤 영웅인지 맞혀 주세요."}</p>
+    <p class="muted small">다른 사람이 화면을 보지 않게 해 주세요.</p>
+    <button class="primary" id="go">${esc(name)}, 준비됐어요</button>
+  </section>`;
+  document.getElementById("go").onclick=()=>{L.phase="play";renderLocal()};
+}
+function lPlay(){
+  const k=kind(L.round),c=L.chains[chainOf(L.turn,L.round,ln())],prev=c.entries[c.entries.length-1];
+  const submit=entry=>{
+    c.entries.push({...entry,by:L.turn});
+    L.turn++;if(L.turn>=ln()){L.turn=0;L.round++}
+    L.phase=L.round>=ln()?"albums":"handoff";renderLocal();
+  };
+  const ci=chainOf(L.turn,L.round,ln());
+  if(k==="draw")drawTask(L.round===0?L.heroes[ci]:prev.text,submit,L.round===0);else textTask(k,prev&&prev.img,submit);
+}
+function lAlbums(){
+  stepLabel.textContent="결과 앨범";
+  app.innerHTML=`<section class="card">
+    <h2>끝! 앨범을 하나씩 열어 보세요</h2>
+    <div class="albums">${L.chains.map((c,i)=>`<button data-a="${i}">${esc(L.players[c.owner])}의 앨범<small>그림 ${c.entries.length}장</small></button>`).join("")}</div>
+    ${scoreHTML(L.chains.map(c=>c.entries),L.players.map((_,i)=>i),i=>L.players[i])}
+    <div class="row"><button id="again">같은 사람들로 다시</button><button id="home">처음으로</button></div>
+  </section>`;
+  app.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{L.view={a:+b.dataset.a,shown:1};L.phase="chain";renderLocal()});
+  document.getElementById("again").onclick=()=>{L.heroes=pickHeroes(ln());L.chains=L.players.map((_,i)=>({owner:i,entries:[]}));L.round=0;L.turn=0;L.phase="handoff";renderLocal()};
+  document.getElementById("home").onclick=renderHome;
+}
+function lChain(){
+  const c=L.chains[L.view.a],shown=L.view.shown,total=c.entries.length;
+  stepLabel.textContent=`${L.players[c.owner]}의 앨범`;
+  app.innerHTML=`<section class="card">
+    <h2>${esc(L.players[c.owner])}의 앨범</h2>
+    ${chainHTML(c.entries,i=>L.players[i],shown)}
+    <div class="row">
+      <button id="back">앨범 목록</button><span class="grow"></span>
+      ${shown<total?`<button id="all">전부 보기</button><button class="primary" id="next">다음 공개 (${shown}/${total})</button>`:""}
     </div>
-  </div>
-</div>
+  </section>`;
+  document.getElementById("back").onclick=()=>{L.phase="albums";renderLocal()};
+  if(shown<total){
+    document.getElementById("next").onclick=()=>{L.view.shown++;renderLocal();const es=app.querySelectorAll(".entry");es[es.length-1].scrollIntoView({behavior:"smooth",block:"center"})};
+    document.getElementById("all").onclick=()=>{L.view.shown=total;renderLocal()};
+  }
+}
 
-<div id="용종" style="padding:34px 26px 0;">
-  <div style="border-top:1px solid #B5BFBC;padding-top:26px;">
-    <div style="font-size:20px;margin-bottom:16px;">용종</div>
-    <div style="font-size:14px;line-height:2.1;color:#2C3F47;">
-      변이 게이트의 마지막 방에서만 만날 수 있다. 그 외 어떤 게이트에도 나타나지 않는다.<br><br>
-      아홉 종이 확인되어 있으며 각각 다른 것을 시험한다. 용은 헌터가 아니라 곁의 정령을 본다. 힘이 아니라 계약의 깊이를 보고, 충분하다 여기면 싸울 이유가 없다고 판단한다.<br><br>
-      인정받은 자에게는 같은 속성의 정령에게 축복이 내린다. 힘으로 이겨낸 경우에도 축복은 주어진다. 용은 결과를 부정하지 않는다.<br><br>
-      살아 돌아온 사례는 국내에 없다. 협회에도 기록만 남아 있다.
+/* ================= 온라인 모드 (P2P: 방장 기기가 서버 역할) ================= */
+const PREFIX="ow-nakseo-relay-v1-";
+const O={uid:null,code:null,isHost:false,peer:null,conn:null,conns:{},room:null,players:{},entries:{},shownKey:null,loaded:false,everConnected:false,retryTimer:null};
+O.uid=ls.get("nr_uid")||("u"+Math.random().toString(36).slice(2,10)+Date.now().toString(36));ls.set("nr_uid",O.uid);
+const CODE_CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ";
+const newCode=()=>Array.from({length:4},()=>CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join("");
+const qs=new URLSearchParams(location.search);
+const URL_ROOM=(qs.get("room")||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,4);
+function peerOpts(){
+  const o={debug:0,config:{iceServers:[
+    {urls:"stun:stun.l.google.com:19302"},
+    {urls:["turn:eu-0.turn.peerjs.com:3478","turn:us-0.turn.peerjs.com:3478"],username:"peerjs",credential:"peerjsp"}]}};
+  if(qs.get("peerhost")){o.host=qs.get("peerhost");o.port=+(qs.get("peerport")||9000);o.path=qs.get("peerpath")||"/";o.secure=false;o.config={iceServers:[]}}
+  return o;
+}
+const netEl=document.getElementById("net");
+function netMsg(m){if(!netEl)return;netEl.textContent=m||"";netEl.hidden=!m}
+
+function initOnline(){
+  if(typeof Peer==="undefined"){O.unavailable=true;if(VIEW==="home")renderOnlineBox();return}
+  // 새로고침했을 때 하던 방으로 돌아가기
+  let saved=null;try{saved=JSON.parse(ls.get("nr_host")||"null")}catch(e){}
+  if(saved&&Date.now()-(saved.at||0)<6*3600e3&&(!URL_ROOM||URL_ROOM===saved.code)){resumeHost(saved);return}
+  const room=ls.get("nr_room");
+  if(room&&(!URL_ROOM||URL_ROOM===room)){joinRoom(room,true);return}
+  if(VIEW==="home")renderOnlineBox();
+}
+function renderOnlineBox(){
+  const box=document.getElementById("onlineBox");if(!box)return;
+  if(O.unavailable){box.innerHTML=`<p class="muted">온라인 연결 도구를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.</p>`;return}
+  box.innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">
+    <p class="muted">방을 만들고 초대 링크를 보내면 친구들이 각자 폰으로 들어와요. 가입은 필요 없어요.</p>
+    <div><div class="label">내 닉네임</div><input type="text" id="nick" maxlength="12" placeholder="닉네임" value="${esc(NICK)}"></div>
+    ${URL_ROOM?"":`<button class="primary" id="create">새 방 만들기</button>`}
+    <div class="row"><input type="text" class="code" id="code" maxlength="4" placeholder="코드" autocomplete="off" value="${esc(URL_ROOM)}"><button id="join" ${URL_ROOM?'class="primary"':""}>참여</button></div>
+    <div class="err" id="oerr"></div>
+    ${URL_ROOM?`<p class="muted small">초대받은 방 <b>${esc(URL_ROOM)}</b>이에요. 닉네임을 적고 참여를 누르세요.</p>`:""}
+  </div>`;
+  const nick=document.getElementById("nick");
+  nick.oninput=()=>{NICK=nick.value;ls.set("nr_nick",NICK)};
+  const cr=document.getElementById("create");if(cr)cr.onclick=createRoom;
+  const codeEl=document.getElementById("code");
+  const j=()=>joinRoom(codeEl.value.trim().toUpperCase());
+  document.getElementById("join").onclick=j;
+  codeEl.onkeydown=e=>{if(e.key==="Enter")j()};
+  if(URL_ROOM)nick.focus();
+}
+function oerr(m){const e=document.getElementById("oerr");if(e)e.textContent=m}
+function checkNick(){const v=(NICK||"").trim();if(!v){oerr("닉네임을 먼저 적어 주세요.");return null}return v.slice(0,12)}
+function cleanupNet(){
+  clearTimeout(O.retryTimer);
+  try{O.conn&&O.conn.close()}catch(e){}
+  try{O.peer&&O.peer.destroy()}catch(e){}
+  O.peer=null;O.conn=null;O.conns={};netMsg("");
+}
+
+/* ---------- 방장 ---------- */
+function hostSave(){
+  const base={code:O.code,room:O.room,players:O.players,at:Date.now()};
+  try{localStorage.setItem("nr_host",JSON.stringify({...base,entries:O.entries}))}
+  catch(e){try{localStorage.setItem("nr_host",JSON.stringify({...base,entries:{}}))}catch(_){}}
+}
+function startHostPeer(code,onOpen,onTaken){
+  const peer=new Peer(PREFIX+code,peerOpts());
+  O.peer=peer;
+  peer.on("open",()=>onOpen());
+  peer.on("connection",conn=>{
+    conn.on("data",msg=>hostHandle(conn,msg));
+    conn.on("close",()=>{if(conn.uid&&O.conns[conn.uid]===conn){delete O.conns[conn.uid];if(O.players[conn.uid]){O.players[conn.uid]={...O.players[conn.uid],on:false};hostChanged()}}});
+    conn.on("error",()=>{});
+  });
+  peer.on("disconnected",()=>{if(O.peer===peer&&!peer.destroyed){netMsg("연결 서버와 끊겼어요. 다시 연결하는 중…");setTimeout(()=>{try{peer.reconnect()}catch(e){}},1500)}});
+  peer.on("open",()=>netMsg(""));
+  peer.on("error",e=>{
+    if(e.type==="unavailable-id"){onTaken();return}
+    if(e.type==="network"||e.type==="server-error"||e.type==="socket-error"||e.type==="socket-closed"){netMsg("인터넷 연결이 불안정해요. 다시 연결하는 중…");return}
+    if(e.type==="peer-unavailable")return;
+    netMsg("연결 오류: "+(e.type||"알 수 없음"));
+  });
+}
+function createRoom(){
+  const nick=checkNick();if(!nick)return;
+  const btn=document.getElementById("create");if(btn)btn.disabled=true;
+  oerr("");let tries=0;
+  const attempt=()=>{
+    const code=newCode();
+    cleanupNet();
+    startHostPeer(code,()=>{
+      O.isHost=true;O.code=code;
+      O.room={host:O.uid,status:"lobby",order:[],nicks:{},heroes:[],reveal:null,game:Date.now()};
+      O.players={[O.uid]:{nick,at:Date.now(),on:true}};O.entries={};O.loaded=true;
+      ls.del("nr_room");hostSave();enterOnline();
+    },()=>{if(++tries<5)attempt();else{if(btn)btn.disabled=false;oerr("방을 만들지 못했어요. 잠시 후 다시 눌러 주세요.")}});
+    O.peer.on("error",e=>{if(VIEW==="home"&&e.type!=="unavailable-id"){if(btn)btn.disabled=false;oerr("연결 서버에 접속하지 못했어요. 인터넷 연결을 확인해 주세요.")}});
+  };
+  attempt();
+}
+function resumeHost(saved){
+  O.isHost=true;O.code=saved.code;O.room=saved.room;O.players=saved.players||{};O.entries=saved.entries||{};O.loaded=true;
+  Object.keys(O.players).forEach(id=>{if(id!==O.uid)O.players[id]={...O.players[id],on:false}});
+  enterOnline();
+  netMsg("방을 다시 여는 중…");
+  let tries=0;
+  const attempt=()=>{
+    cleanupNet();
+    startHostPeer(saved.code,()=>{netMsg("");},()=>{
+      if(++tries<12){netMsg(`방을 다시 여는 중… (${tries})`);O.retryTimer=setTimeout(attempt,3000)}
+      else netMsg("방 코드를 다시 열지 못했어요. 방을 나가서 새로 만들어 주세요.");
+    });
+  };
+  attempt();
+}
+function hostChanged(){
+  const msg={t:"state",room:O.room,players:O.players};
+  Object.values(O.conns).forEach(c=>{try{c.open&&c.send(msg)}catch(e){}});
+  hostSave();renderOnline();
+}
+function hostAddEntry(key,data){
+  if(O.entries[key])return false;
+  if(!O.room||O.room.status!=="playing"||data.game!==O.room.game)return false;
+  O.entries[key]=data;
+  const msg={t:"entry",key,data};
+  Object.values(O.conns).forEach(c=>{try{c.open&&c.send(msg)}catch(e){}});
+  hostSave();renderOnline();return true;
+}
+function hostHandle(conn,msg){
+  if(!msg||typeof msg!=="object")return;
+  if(msg.t==="join"){
+    const uid=String(msg.uid||"").slice(0,40),nick=String(msg.nick||"").trim().slice(0,12)||"손님";
+    if(!uid)return;
+    const R=O.room;
+    if(R.status!=="lobby"&&!R.order.includes(uid)){try{conn.send({t:"deny",msg:"이미 게임이 시작된 방이에요. 다음 판에 들어와 주세요."})}catch(e){}setTimeout(()=>conn.close(),500);return}
+    if(R.status==="lobby"&&!O.players[uid]&&Object.keys(O.players).length>=12){try{conn.send({t:"deny",msg:"방이 꽉 찼어요 (최대 12명)."})}catch(e){}setTimeout(()=>conn.close(),500);return}
+    const old=O.conns[uid];if(old&&old!==conn){try{old.close()}catch(e){}}
+    conn.uid=uid;O.conns[uid]=conn;
+    O.players[uid]={nick:O.players[uid]?O.players[uid].nick:nick,at:O.players[uid]?O.players[uid].at:Date.now(),on:true};
+    if(R.status==="lobby")O.players[uid].nick=nick;
+    try{conn.send({t:"full",room:O.room,players:O.players,entries:O.entries})}catch(e){}
+    hostChanged();return;
+  }
+  const uid=conn.uid;if(!uid)return;
+  if(msg.t==="entry"){
+    const d=msg.data||{};
+    if(d.by!==uid)return;
+    const n=O.room.order.length,p=O.room.order.indexOf(uid);
+    if(p<0||typeof d.r!=="number"||d.c!==chainOf(p,d.r,n))return;
+    const clean=d.type==="img"?{type:"img",img:String(d.img||""),hero:d.hero?String(d.hero).slice(0,30):undefined}:{type:"text",text:String(d.text||"").slice(0,30)};
+    if(clean.type==="img"&&!clean.img.startsWith("data:image/"))return;
+    if(clean.hero===undefined)delete clean.hero;
+    hostAddEntry(entryKey(d.c,d.r),{...clean,by:uid,c:d.c,r:d.r,game:d.game});
+  }else if(msg.t==="leave"){
+    if(O.room.status==="lobby"){delete O.players[uid]}else if(O.players[uid]){O.players[uid]={...O.players[uid],on:false}}
+    delete O.conns[uid];hostChanged();
+  }
+}
+
+/* ---------- 참가자 ---------- */
+function joinRoom(code,silent){
+  if(!/^[A-Z]{4}$/.test(code)){oerr("4글자 방 코드를 적어 주세요.");return}
+  const nick=silent?((NICK||"").trim().slice(0,12)||"손님"):checkNick();if(!nick)return;
+  cleanupNet();
+  O.isHost=false;O.code=code;O.everConnected=false;O.loaded=false;
+  const btn=document.getElementById("join");if(btn)btn.disabled=true;
+  if(silent){enterOnline();app.innerHTML=`<section class="card"><p class="muted">방 ${esc(code)}에 다시 들어가는 중…</p><div class="row"><button id="cancelJoin">그만두고 처음으로</button></div></section>`;O.shownKey="connecting";document.getElementById("cancelJoin").onclick=leaveRoom}
+  else oerr("방을 찾는 중…");
+  const peer=new Peer(peerOpts());O.peer=peer;
+  const fail=m=>{
+    if(O.everConnected){netMsg("방장과 연결이 끊겼어요. 다시 연결하는 중…");clearTimeout(O.retryTimer);O.retryTimer=setTimeout(connectHost,3000);return}
+    if(btn)btn.disabled=false;oerr(m);if(silent){ls.del("nr_room");cleanupNet();renderHome()}
+  };
+  const connectHost=()=>{
+    if(O.peer!==peer||peer.destroyed)return;
+    if(peer.disconnected){try{peer.reconnect()}catch(e){}O.retryTimer=setTimeout(connectHost,3000);return}
+    const conn=peer.connect(PREFIX+code,{reliable:true});O.conn=conn;
+    let opened=false;
+    const timer=setTimeout(()=>{if(!opened){try{conn.close()}catch(e){}fail("방장 기기에 연결하지 못했어요. 같은 와이파이·데이터 환경에 따라 막힐 수 있어요. 다시 시도해 주세요.")}},15000);
+    conn.on("open",()=>{opened=true;clearTimeout(timer);conn.send({t:"join",uid:O.uid,nick:(NICK||"").trim().slice(0,12)||nick})});
+    conn.on("data",msg=>clientHandle(msg));
+    conn.on("close",()=>{clearTimeout(timer);if(O.conn===conn&&O.code===code&&!O.isHost&&opened)fail("")});
+    conn.on("error",()=>{});
+  };
+  peer.on("open",connectHost);
+  peer.on("disconnected",()=>{if(O.peer===peer&&!peer.destroyed)setTimeout(()=>{try{peer.reconnect()}catch(e){}},1500)});
+  peer.on("error",e=>{
+    if(e.type==="peer-unavailable"){
+      if(O.everConnected){netMsg("방장이 잠시 나갔어요. 다시 연결하는 중…");clearTimeout(O.retryTimer);O.retryTimer=setTimeout(connectHost,4000);return}
+      fail("그런 방이 없거나 방장이 방을 닫았어요. 코드를 확인해 주세요.");return}
+    if(e.type==="network"||e.type==="server-error"||e.type==="socket-error"||e.type==="socket-closed"){if(!O.everConnected&&VIEW!=="online")fail("연결 서버에 접속하지 못했어요. 인터넷 연결을 확인해 주세요.");else netMsg("인터넷 연결이 불안정해요. 다시 연결하는 중…");return}
+  });
+}
+function clientHandle(msg){
+  if(!msg||typeof msg!=="object")return;
+  if(msg.t==="full"){
+    O.everConnected=true;netMsg("");
+    O.room=msg.room;O.players=msg.players||{};O.entries=msg.entries||{};O.loaded=true;
+    ls.set("nr_room",O.code);
+    if(VIEW!=="online")enterOnline();else{O.shownKey=null;renderOnline()}
+  }else if(msg.t==="state"){
+    const prevGame=O.room&&O.room.game;
+    O.room=msg.room;O.players=msg.players||{};
+    if(prevGame&&prevGame!==O.room.game)O.entries={};
+    renderOnline();
+  }else if(msg.t==="entry"){
+    if(O.room&&msg.data&&msg.data.game===O.room.game){O.entries[msg.key]=msg.data;renderOnline()}
+  }else if(msg.t==="deny"){
+    const m=msg.msg;ls.del("nr_room");cleanupNet();O.code=null;
+    if(VIEW!=="home")renderHome();
+    oerr(m);const b=document.getElementById("join");if(b)b.disabled=false;
+  }else if(msg.t==="closed"){
+    ls.del("nr_room");cleanupNet();O.code=null;renderHome();oerr("방장이 방을 닫았어요.");
+  }
+}
+
+/* ---------- 공통 ---------- */
+function enterOnline(){
+  VIEW="online";O.shownKey=null;
+  try{const u=new URLSearchParams(location.search);u.set("room",O.code);history.replaceState(null,"",location.pathname+"?"+u)}catch(e){}
+  renderOnline();
+}
+function leaveRoom(){
+  if(O.isHost){
+    Object.values(O.conns).forEach(c=>{try{c.send({t:"closed"})}catch(e){}});
+    ls.del("nr_host");
+    setTimeout(()=>cleanupNet(),300);
+  }else{
+    try{O.conn&&O.conn.open&&O.conn.send({t:"leave"})}catch(e){}
+    ls.del("nr_room");
+    setTimeout(()=>cleanupNet(),300);
+  }
+  O.code=null;O.room=null;O.isHost=false;
+  try{const u=new URLSearchParams(location.search);u.delete("room");const q=u.toString();history.replaceState(null,"",location.pathname+(q?"?"+q:""))}catch(e){}
+  renderHome();
+}
+function inviteLink(){return location.origin+location.pathname+"?room="+O.code}
+async function copyInvite(btn){
+  const link=inviteLink();
+  try{await navigator.clipboard.writeText(link);btn.textContent="복사했어요!";setTimeout(()=>btn.textContent="초대 링크 복사",1800)}
+  catch(e){const i=document.getElementById("inviteText");if(i){i.hidden=false;i.select()}}
+}
+
+function oNick(id){return (O.room&&O.room.nicks&&O.room.nicks[id])||(O.players[id]&&O.players[id].nick)||"누군가"}
+function entryKey(c,r){return `${c}_${r}`}
+function myTask(){
+  const order=O.room.order,n=order.length,p=order.indexOf(O.uid);
+  if(p<0)return {spectator:true};
+  for(let r=0;r<n;r++){
+    const c=chainOf(p,r,n);
+    if(!O.entries[entryKey(c,r)]){
+      if(r===0||O.entries[entryKey(c,r-1)])return {r,c,ready:true};
+      return {r,c,ready:false};
+    }
+  }
+  return {finished:true};
+}
+function allDone(){const n=O.room.order.length;if(!n)return false;for(let c=0;c<n;c++)for(let r=0;r<n;r++)if(!O.entries[entryKey(c,r)])return false;return true}
+
+function renderOnline(){
+  if(VIEW!=="online"||!O.room)return;
+  const R=O.room;
+  if(R.status==="lobby"){O.shownKey="lobby";return oLobby()}
+  if(!O.loaded)return;
+  if(allDone()){
+    const key="album:"+JSON.stringify(R.reveal||null)+":"+R.game;
+    if(O.shownKey===key)return;O.shownKey=key;return oAlbum();
+  }
+  const t=myTask();
+  if(t.ready){
+    const key=`task:${R.game}:${t.r}`;
+    if(O.shownKey===key)return;
+    O.shownKey=key;return oTask(t);
+  }
+  O.shownKey="wait";oWait(t);
+}
+function oLobby(){
+  const R=O.room,isHost=O.isHost;
+  const ids=Object.keys(O.players).sort((a,b)=>(O.players[a].at||0)-(O.players[b].at||0));
+  const onIds=ids.filter(id=>O.players[id].on!==false);
+  stepLabel.textContent="온라인 · 대기실";
+  app.innerHTML=`<section class="card handoff">
+    <p class="muted">방 코드</p>
+    <div class="bigcode">${esc(O.code)}</div>
+    <p class="muted small">친구에게 초대 링크를 보내거나, 이 사이트에서 코드를 입력하게 하세요.</p>
+    <button id="copy">초대 링크 복사</button>
+    <input type="text" id="inviteText" readonly value="${esc(inviteLink())}" hidden>
+  </section>
+  <section class="card">
+    <h3>참가자 ${onIds.length}명</h3>
+    <div class="chips">${ids.map(id=>`<span class="chip${id===O.uid?" me":""}${id===R.host?" host":""}${O.players[id].on===false?" wait":""}">${esc(O.players[id].nick)}</span>`).join("")}</div>
+    <div class="err" id="oerr"></div>
+    <div class="row">
+      <button id="leave">${isHost?"방 닫기":"나가기"}</button><span class="grow"></span>
+      ${isHost?`<button class="primary" id="start" ${onIds.length<3?"disabled":""}>게임 시작</button>`:`<span class="muted">방장(★)이 시작하길 기다리는 중…</span>`}
     </div>
-  </div>
-</div>
+    ${isHost?`<p class="muted small">${onIds.length<3?"3명 이상 모이면 시작할 수 있어요. ":""}방장 기기가 방 역할을 해요. 게임이 끝날 때까지 이 화면을 끄거나 다른 앱으로 오래 나가지 마세요.</p>`:""}
+  </section>`;
+  document.getElementById("copy").onclick=e=>copyInvite(e.currentTarget);
+  document.getElementById("leave").onclick=leaveRoom;
+  if(isHost)document.getElementById("start").onclick=()=>{
+    const order=onIds.slice(0,12);const nicks={};order.forEach(id=>nicks[id]=O.players[id].nick);
+    O.room={...O.room,status:"playing",order,nicks,heroes:pickHeroes(order.length),reveal:null,game:Date.now()};
+    O.entries={};hostChanged();
+  };
+}
+function oTask(t){
+  const n=O.room.order.length,k=kind(t.r);
+  stepLabel.textContent=`${t.r+1}/${n}라운드 · ${KIND_NAME[k]}`;
+  const prev=t.r>0?O.entries[entryKey(t.c,t.r-1)]:null;
+  const save=async entry=>{
+    const data={...entry,by:O.uid,c:t.c,r:t.r,game:O.room.game};
+    if(O.isHost){hostAddEntry(entryKey(t.c,t.r),data)}
+    else{
+      if(!O.conn||!O.conn.open)throw new Error("방장과 연결이 끊겨 있어요. 다시 연결되면 완료를 한 번 더 눌러 주세요.");
+      O.conn.send({t:"entry",data});
+      O.entries[entryKey(t.c,t.r)]=data;
+    }
+    O.shownKey=null;renderOnline();top0();
+  };
+  if(k==="draw")drawTask(t.r===0?((O.room.heroes||[])[t.c]||HEROES[t.c%HEROES.length]):prev.text,save,t.r===0);else textTask(k,prev&&prev.img,save);
+  top0();
+}
+function oWait(t){
+  const R=O.room,n=R.order.length;
+  const r=t.finished||t.spectator?n-1:t.r;
+  const doneIds=R.order.filter((id,q)=>O.entries[entryKey(chainOf(q,r,n),r)]);
+  const total=Object.keys(O.entries).length;
+  let bar='<div class="progress" aria-hidden="true">';for(let i=0;i<n;i++){const cnt=R.order.filter((_,q)=>O.entries[entryKey(chainOf(q,i,n),i)]).length;bar+=`<i class="${cnt===n?"done":cnt>0?"now":""}"></i>`}bar+="</div>";
+  stepLabel.textContent=t.spectator?"온라인 · 관전":`${r+1}/${n}라운드 · 기다리는 중`;
+  const prevId=R.order[mod(R.order.indexOf(O.uid)-1,n)];
+  app.innerHTML=`<section class="card handoff">
+    ${bar}<span class="muted small">전체 ${total} / ${n*n}</span>
+    <h2>${t.spectator?"이 판에는 참가하지 않았어요":t.finished?"내 차례는 모두 끝났어요":"앞 사람을 기다리는 중…"}</h2>
+    ${t.spectator?"":`<p class="muted">${t.finished?"다른 사람들이 끝내면 바로 앨범이 열려요.":`<b>${esc(oNick(prevId))}</b>님이 끝내면 내 차례가 와요.`}</p>`}
+    <div class="label">${r+1}라운드 끝낸 사람</div>
+    <div class="chips" style="justify-content:center">${R.order.map(id=>`<span class="chip${doneIds.includes(id)?"":" wait"}${id===O.uid?" me":""}">${esc(oNick(id))}${O.players[id]&&O.players[id].on===false?" (끊김)":""}</span>`).join("")}</div>
+    <button id="leave" style="margin-top:8px">${O.isHost?"방 닫기":"방 나가기"}</button>
+  </section>`;
+  document.getElementById("leave").onclick=leaveRoom;
+}
+function oAlbum(){
+  const R=O.room,n=R.order.length,isHost=O.isHost,rv=R.reveal;
+  const chainEntries=c=>Array.from({length:n},(_,r)=>O.entries[entryKey(c,r)]);
+  const setReveal=v=>{O.room={...O.room,reveal:v};hostChanged()};
+  if(!rv){
+    stepLabel.textContent="결과 앨범";
+    app.innerHTML=`<section class="card">
+      <h2>끝! 앨범을 함께 열어 봐요</h2>
+      <p class="muted">${isHost?"앨범을 누르면 모두의 화면에 같이 열려요.":"방장이 앨범을 고르면 모두의 화면에 같이 열려요."}</p>
+      <div class="albums">${R.order.map((id,c)=>`<button data-a="${c}" ${isHost?"":"disabled"}>${esc(oNick(id))}의 앨범<small>그림 ${Math.ceil(n/2)}장</small></button>`).join("")}</div>
+      ${scoreHTML(R.order.map((_,c)=>chainEntries(c)),R.order,oNick)}
+      <div class="row">
+        <button id="leave">${isHost?"방 닫기":"방 나가기"}</button><span class="grow"></span>
+        ${isHost?`<button class="primary" id="again">같은 방에서 한 판 더</button>`:""}
+      </div>
+    </section>`;
+    if(isHost){
+      app.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>setReveal({a:+b.dataset.a,shown:1}));
+      document.getElementById("again").onclick=()=>{
+        Object.keys(O.players).forEach(id=>{if(O.players[id].on===false)delete O.players[id]});
+        O.room={...O.room,status:"lobby",reveal:null,order:[],heroes:[],game:Date.now()};O.entries={};hostChanged();
+      };
+    }
+    document.getElementById("leave").onclick=leaveRoom;
+    top0();return;
+  }
+  const entries=chainEntries(rv.a),shown=Math.min(rv.shown,n);
+  stepLabel.textContent=`${oNick(R.order[rv.a])}의 앨범`;
+  app.innerHTML=`<section class="card">
+    <h2>${esc(oNick(R.order[rv.a]))}의 앨범</h2>
+    ${chainHTML(entries,oNick,shown)}
+    <div class="row">
+      ${isHost?`<button id="back">앨범 목록</button><span class="grow"></span>${shown<n?`<button id="all">전부 보기</button><button class="primary" id="next">다음 공개 (${shown}/${n})</button>`:""}`
+        :`<span class="muted">방장이 넘기는 중 (${shown}/${n})</span>`}
+    </div>
+  </section>`;
+  if(isHost){
+    document.getElementById("back").onclick=()=>setReveal(null);
+    if(shown<n){document.getElementById("next").onclick=()=>setReveal({a:rv.a,shown:shown+1});document.getElementById("all").onclick=()=>setReveal({a:rv.a,shown:n})}
+  }
+  const es=app.querySelectorAll(".entry");if(es.length>1)es[es.length-1].scrollIntoView({behavior:"smooth",block:"center"});else top0();
+}
 
-<div style="padding:34px 26px 40px;">
-  <div style="border-top:1px solid #B5BFBC;padding-top:20px;font-family:'Nanum Gothic','Malgun Gothic',sans-serif;font-size:11.5px;color:#5E767E;line-height:2;">
-    19세 이용가 &nbsp;&nbsp; 등장인물 전원 성인입니다.
-  </div>
-</div>
-
-</div>
+renderHome();
+initOnline();
+</script>
 </body>
 </html>
