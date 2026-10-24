@@ -97,6 +97,13 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:4/3;cursor:crosshair;to
 @keyframes pop{from{transform:translateY(8px);opacity:.3}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.entry{animation:none}button{transition:none}}
 .err{color:var(--accent);font-size:.9rem;min-height:1.2em}
+.timer{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:1.3rem;min-width:0}
+.timer b{font-variant-numeric:tabular-nums;display:inline-block;min-width:1.4em;text-align:right}
+.ttrack{flex:1;height:12px;border:2px solid var(--ink);border-radius:999px;overflow:hidden;background:var(--paper)}
+.ttrack i{display:block;height:100%;width:100%;background:var(--mint);transition:width .2s linear}
+.timer.hurry .ttrack i{background:var(--accent)}
+.timer.hurry b{color:var(--accent)}
+@media (prefers-reduced-motion:reduce){.ttrack i{transition:none}}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{border:2px solid var(--ink);border-radius:999px;padding:3px 12px;font-family:var(--display);font-size:1.2rem;background:var(--paper)}
 .chip.me{background:var(--mint);color:var(--accent-ink);border-color:var(--ink)}
@@ -153,6 +160,24 @@ let VIEW="home"; // home | local | online
 const top0=()=>window.scrollTo({top:0});
 
 /* ================= 공용 화면 조각 ================= */
+// 차례 타이머: 그리기 60초, 맞히기 20초. 시간이 끝나면 지금 상태로 자동 제출
+let TASK_TIMER=null;
+function stopTimer(){if(TASK_TIMER){clearInterval(TASK_TIMER);TASK_TIMER=null}}
+function startTimer(sec,onEnd){
+  stopTimer();
+  const bar=document.getElementById("tbar"),num=document.getElementById("tnum");
+  const end=Date.now()+sec*1000;
+  const tick=()=>{
+    if(!document.body.contains(bar)){stopTimer();return}
+    const left=Math.max(0,end-Date.now());
+    num.textContent=Math.ceil(left/1000);
+    bar.style.width=(left/(sec*1000)*100)+"%";
+    bar.parentElement.parentElement.classList.toggle("hurry",left<=(sec>30?10000:5000));
+    if(left<=0){stopTimer();onEnd()}
+  };
+  tick();TASK_TIMER=setInterval(tick,200);
+}
+const timerHTML=`<div class="timer grow" aria-live="off"><div class="ttrack"><i id="tbar"></i></div><span><b id="tnum"></b>초</span></div>`;
 function textTask(k,prevImg,onDone){
   app.innerHTML=`<section class="card">
     <h2>이 영웅은 누구일까요?</h2>
@@ -161,16 +186,17 @@ function textTask(k,prevImg,onDone){
     <p class="muted small">목록에 없는 이름도 적을 수 있어요. 다음 사람은 여기 적은 이름을 보고 그려요.</p>
     <div class="err" id="err"></div>
     <div class="row">
-      <span class="grow"></span>
+      ${timerHTML}
       <button class="primary" id="ok">완료</button>
     </div>
   </section>`;
   const t=document.getElementById("txt"); t.focus();
   const ok=document.getElementById("ok");
-  const done=async()=>{let v=t.value.trim();if(!v){document.getElementById("err").textContent="영웅 이름을 적어 주세요.";return}v=toHero(v)||v;
-    ok.disabled=true;try{await onDone({type:"text",text:v})}catch(e){ok.disabled=false;document.getElementById("err").textContent=e.message||"저장하지 못했어요. 다시 눌러 주세요."}};
-  ok.onclick=done;
-  t.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)done()};
+  const done=async force=>{let v=t.value.trim();if(!v){if(!force){document.getElementById("err").textContent="영웅 이름을 적어 주세요.";return}v="모르겠어요"}v=toHero(v)||v;
+    stopTimer();ok.disabled=true;try{await onDone({type:"text",text:v})}catch(e){ok.disabled=false;document.getElementById("err").textContent=e.message||"저장하지 못했어요. 다시 눌러 주세요."}};
+  ok.onclick=()=>done(false);
+  t.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)done(false)};
+  startTimer(20,()=>done(true));
 }
 function drawTask(promptText,onDone,isFirst){
   let hero=promptText;
@@ -188,7 +214,7 @@ function drawTask(promptText,onDone,isFirst){
       <button class="tbtn" id="clear">전부 지우기</button>
     </div>
     <div class="err" id="err"></div>
-    <div class="row end"><button class="primary" id="ok">완료</button></div>
+    <div class="row">${timerHTML}<button class="primary" id="ok">완료</button></div>
   </section>`;
   const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
   let color=COLORS[0],size=SIZES[1],strokes=[],cur=null;
@@ -219,12 +245,14 @@ function drawTask(promptText,onDone,isFirst){
   let armed=false;const clr=document.getElementById("clear");
   clr.onclick=()=>{if(!strokes.length)return;if(!armed){armed=true;clr.textContent="정말 지울까요?";setTimeout(()=>{armed=false;clr.textContent="전부 지우기"},2500);return}strokes=[];redraw();armed=false;clr.textContent="전부 지우기"};
   const ok=document.getElementById("ok");
-  ok.onclick=async()=>{
-    if(!strokes.length){document.getElementById("err").textContent="한 획이라도 그려 주세요.";return}
-    ok.disabled=true;
+  const submit=async force=>{
+    if(!strokes.length&&!force){document.getElementById("err").textContent="한 획이라도 그려 주세요.";return}
+    cur=null;stopTimer();ok.disabled=true;
     try{await onDone(isFirst?{type:"img",img:cv.toDataURL("image/jpeg",0.7),hero}:{type:"img",img:cv.toDataURL("image/jpeg",0.7)})}
     catch(e){ok.disabled=false;document.getElementById("err").textContent=e.message||"저장하지 못했어요. 다시 눌러 주세요."}
   };
+  ok.onclick=()=>submit(false);
+  startTimer(60,()=>submit(true));
 }
 function chainHTML(entries,nameOf,shown){
   const hero=entries[0].hero;
@@ -235,9 +263,9 @@ function chainHTML(entries,nameOf,shown){
     </div>`).join("")}</div>`;
 }
 const rulesHTML=`<div class="rules">
-  <div class="rule"><b>1. 영웅 그리기</b>각자 무작위로 받은 오버워치 영웅을 몰래 그립니다.</div>
-  <div class="rule"><b>2. 맞히기</b>앞 사람 그림만 보고 어떤 영웅인지 맞힙니다.</div>
-  <div class="rule"><b>3. 다시 그리기</b>앞 사람이 맞힌 이름만 보고 다시 그립니다.</div>
+  <div class="rule"><b>1. 영웅 그리기 · 60초</b>각자 무작위로 받은 오버워치 영웅을 몰래 그립니다.</div>
+  <div class="rule"><b>2. 맞히기 · 20초</b>앞 사람 그림만 보고 어떤 영웅인지 맞힙니다.</div>
+  <div class="rule"><b>3. 다시 그리기 · 60초</b>앞 사람이 맞힌 이름만 보고 다시 그립니다.</div>
 </div>`;
 // 점수: 정답을 맞힌 사람 +1, 그 그림을 그린 사람 +1
 function scoreOf(chains,ids){
